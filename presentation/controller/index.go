@@ -2,8 +2,8 @@ package controller
 
 var Controllers = []Controller{}
 
-func Add(controller Controller) {
-	Controllers = append(Controllers, controller)
+func Add(controller ...Controller) {
+	Controllers = append(Controllers, controller...)
 }
 
 func SetupRoutes() {

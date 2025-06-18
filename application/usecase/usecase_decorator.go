@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -33,7 +34,7 @@ func NewUseCaseWithPropsDecorator[P, R any](useCase UseCaseWithProps[P, R]) UseC
 }
 
 // Execute para casos de uso sem parâmetros
-func (d UseCaseDecorator[R]) Execute() (R, error) {
+func (d UseCaseDecorator[R]) Execute(ctx context.Context) (R, error) {
     useCaseType := reflect.TypeOf(d.useCase)
     useCaseName := useCaseType.String()
     
@@ -43,7 +44,7 @@ func (d UseCaseDecorator[R]) Execute() (R, error) {
 
     utils.Logger.Debug().Str("useCase", useCaseName).Msg("Executing use case")
 
-    result, err := d.useCase.Execute()
+    result, err := d.useCase.Execute(ctx)
     if err != nil {
         utils.Logger.Error().Err(err).Str("useCase", useCaseName).Msg("Error executing use case")
         var zero R
@@ -61,7 +62,7 @@ func (d UseCaseDecorator[R]) Execute() (R, error) {
 }
 
 // Execute para casos de uso com parâmetros
-func (d UseCaseWithPropsDecorator[P, R]) Execute(props P) (R, error) {
+func (d UseCaseWithPropsDecorator[P, R]) Execute(ctx context.Context, props P) (R, error) {
     useCaseType := reflect.TypeOf(d.useCase)
     useCaseName := useCaseType.String()
     
@@ -96,7 +97,7 @@ func (d UseCaseWithPropsDecorator[P, R]) Execute(props P) (R, error) {
             Msg("Executing use case with nil props")
     }
 
-    result, err := d.useCase.Execute(props)
+    result, err := d.useCase.Execute(ctx, props)
     if err != nil {
         utils.Logger.Error().Err(err).Str("useCase", useCaseName).Msg("Error executing use case")
         var zero R
