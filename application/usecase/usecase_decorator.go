@@ -5,48 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/Gabriel-Schiestl/go-clarch/utils"
 )
 
-// Decorador para casos de uso sem parâmetros
-type UseCaseDecorator[R any] struct {
-    useCase UseCase[R]
-}
-
-// Decorador para casos de uso com parâmetros
-type UseCaseWithPropsDecorator[P, R any] struct {
-    useCase UseCaseWithProps[P, R]
-}
-
-// Criação do decorador para casos de uso sem parâmetros
-func NewUseCaseDecorator[R any](useCase UseCase[R]) UseCaseDecorator[R] {
-    return UseCaseDecorator[R]{
-        useCase: useCase,
-    }
-}
-
-// Criação do decorador para casos de uso com parâmetros
-func NewUseCaseWithPropsDecorator[P, R any](useCase UseCaseWithProps[P, R]) UseCaseWithPropsDecorator[P, R] {
-    return UseCaseWithPropsDecorator[P, R]{
-        useCase: useCase,
-    }
-}
-
-// Execute para casos de uso sem parâmetros
-func (d UseCaseDecorator[R]) Execute(ctx context.Context) (R, error) {
-    useCaseType := reflect.TypeOf(d.useCase)
+func ExecuteUseCase[R any](ctx context.Context, useCase UseCase[R]) (R, error) {
+    useCaseType := reflect.TypeOf(useCase)
     useCaseName := useCaseType.String()
     
     if useCaseType.Kind() == reflect.Ptr {
         useCaseName = useCaseType.Elem().String()
     }
 
+    now := time.Now()
+
     utils.Logger.Debug().Str("useCase", useCaseName).Msg("Executing use case")
 
-    result, err := d.useCase.Execute(ctx)
+    result, err := useCase.Execute(ctx)
+
+    duration := time.Since(now)
+
     if err != nil {
-        utils.Logger.Error().Err(err).Str("useCase", useCaseName).Msg("Error executing use case")
+        utils.Logger.Error().Err(err).Str("useCase", useCaseName).Str("duration", duration.String()).Msg("Error executing use case")
         var zero R
         return zero, err
     }
@@ -55,15 +36,16 @@ func (d UseCaseDecorator[R]) Execute(ctx context.Context) (R, error) {
 
     utils.Logger.Info().
         Str("useCase", useCaseName).
+        Str("duration", duration.String()).
         Str("result", resultValue).
         Msg("Successfully executed use case")
         
     return result, nil
 }
 
-// Execute para casos de uso com parâmetros
-func (d UseCaseWithPropsDecorator[P, R]) Execute(ctx context.Context, props P) (R, error) {
-    useCaseType := reflect.TypeOf(d.useCase)
+// Execute para casos de uso com parâmetros - agora é uma função genérica
+func ExecuteUseCaseWithProps[P, R any](ctx context.Context, useCase UseCaseWithProps[P, R], props P) (R, error) {
+    useCaseType := reflect.TypeOf(useCase)
     useCaseName := useCaseType.String()
     
     if useCaseType.Kind() == reflect.Ptr {
@@ -97,9 +79,14 @@ func (d UseCaseWithPropsDecorator[P, R]) Execute(ctx context.Context, props P) (
             Msg("Executing use case with nil props")
     }
 
-    result, err := d.useCase.Execute(ctx, props)
+    now := time.Now()
+
+    result, err := useCase.Execute(ctx, props)
+
+    duration := time.Since(now)
+
     if err != nil {
-        utils.Logger.Error().Err(err).Str("useCase", useCaseName).Msg("Error executing use case")
+        utils.Logger.Error().Err(err).Str("useCase", useCaseName).Str("duration", duration.String()).Msg("Error executing use case")
         var zero R
         return zero, err
     }
@@ -108,6 +95,7 @@ func (d UseCaseWithPropsDecorator[P, R]) Execute(ctx context.Context, props P) (
 
     utils.Logger.Info().
         Str("useCase", useCaseName).
+        Str("duration", duration.String()).
         Str("result", resultValue).
         Msg("Successfully executed use case")
         
