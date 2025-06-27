@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/Gabriel-Schiestl/go-clarch/utils"
+	"github.com/Gabriel-Schiestl/go-clarch/v2/utils"
 )
 
 func ExecuteUseCase[R any](ctx context.Context, useCase UseCase[R]) (R, error) {
