@@ -1,4 +1,4 @@
-module github.com/Gabriel-Schiestl/go-clarch/v2
+module github.com/Gabriel-Schiestl/go-clarch/v3
 
 go 1.24.0
 
